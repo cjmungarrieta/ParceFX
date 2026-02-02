@@ -201,6 +201,9 @@ export async function POST(request: Request) {
     }
 
     // Send welcome email directly from Vercel (works even if Supabase Edge Function is not set up)
+    let emailSent = false;
+    let emailError: string | null = null;
+
     if (resend) {
       try {
         const hasPdf = !!STRATEGY_PDF_URL;
@@ -209,7 +212,9 @@ export async function POST(request: Request) {
           attachments.push({ filename: 'Estrategia-ParceFX.pdf', path: STRATEGY_PDF_URL });
         }
 
-        await resend.emails.send({
+        console.log(`Attempting to send email to ${normalizedEmail} from ${FROM_EMAIL}`);
+
+        const emailResult = await resend.emails.send({
           from: FROM_EMAIL,
           to: normalizedEmail,
           subject: '🎯 Tu Estrategia de Trading Está Lista',
@@ -217,7 +222,8 @@ export async function POST(request: Request) {
           ...(attachments.length > 0 && { attachments }),
         });
 
-        console.log(`Welcome email sent to ${normalizedEmail}`);
+        console.log(`Welcome email sent to ${normalizedEmail}`, emailResult);
+        emailSent = true;
 
         // Optional: send notification to admin
         if (NOTIFY_EMAIL) {
@@ -228,16 +234,22 @@ export async function POST(request: Request) {
             html: `<p><strong>Nombre:</strong> ${nombre.trim()}<br/><strong>Email:</strong> ${normalizedEmail}<br/><strong>Fecha:</strong> ${new Date().toISOString()}</p>`,
           });
         }
-      } catch (emailError) {
+      } catch (err: any) {
         // Log error but don't fail the request - lead was saved successfully
-        console.error('Error sending welcome email:', emailError);
+        console.error('Error sending welcome email:', err);
+        emailError = err?.message || 'Unknown email error';
       }
+    } else {
+      console.warn('Resend not configured - RESEND_API_KEY missing');
+      emailError = 'Email service not configured';
     }
 
     return NextResponse.json({
       success: true,
       message: 'Lead guardado exitosamente',
-      lead
+      lead,
+      emailSent,
+      emailError
     });
 
   } catch (error) {
