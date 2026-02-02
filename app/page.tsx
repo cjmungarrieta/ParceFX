@@ -26,6 +26,7 @@ export default function Home() {
   const [submitMessage, setSubmitMessage] = useState('');
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [errorMessage, setErrorMessage] = useState('');
+  const [formLoadTimestamp] = useState(() => Date.now()); // Capture when form loads for bot detection
 
   // Capture UTM parameters on mount
   useEffect(() => {
@@ -115,7 +116,7 @@ export default function Home() {
       email: formData.get('email') as string,
       telefono: formData.get('telefono') as string || null,
       website: formData.get('website') as string, // Honeypot
-      submitTimestamp: Date.now(), // For bot detection
+      submitTimestamp: formLoadTimestamp, // Use form load time for bot detection (not submit time)
       utm_source: typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('utm_source') : null,
       utm_campaign: typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('utm_campaign') : null,
       utm_medium: typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('utm_medium') : null,
@@ -448,17 +449,18 @@ export default function Home() {
 }
 
 // Exit Intent Popup Component
-function ExitIntentPopup({ 
-  closePopup, 
+function ExitIntentPopup({
+  closePopup,
   isSubmitting: parentIsSubmitting
-}: { 
-  closePopup: () => void; 
+}: {
+  closePopup: () => void;
   isSubmitting: boolean;
 }) {
   const [email, setEmail] = useState('');
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const [popupLoadTimestamp] = useState(() => Date.now()); // Capture when popup opens for bot detection
 
   const handleFormSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -485,7 +487,7 @@ function ExitIntentPopup({
           email: email.trim().toLowerCase(),
           telefono: null,
           website: '', // Honeypot
-          submitTimestamp: Date.now(),
+          submitTimestamp: popupLoadTimestamp, // Use popup load time for bot detection
           utm_source: typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('utm_source') : null,
           utm_campaign: typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('utm_campaign') : null,
           utm_medium: typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('utm_medium') : null,
