@@ -841,25 +841,27 @@ footer p {
 }
 
 .discount {
-  font-size: 0.75rem;
-  font-weight: 700;
-  padding: 4px 8px;
-  border-radius: 4px;
-  background: #22C55E;
-  color: #000000;
-  display: inline-block;
-  white-space: nowrap;
-  line-height: 1.2;
+  font-size: 0.7rem !important;
+  font-weight: 700 !important;
+  padding: 3px 6px !important;
+  border-radius: 4px !important;
+  background: #22C55E !important;
+  color: #000000 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  white-space: nowrap !important;
+  line-height: 1.2 !important;
+  min-height: 20px;
 }
 
 .discount.highlight {
-  background: #16A34A;
-  color: #FFFFFF;
+  background: #16A34A !important;
+  color: #FFFFFF !important;
 }
 
 .discount.best {
-  background: #15803D;
-  color: #FFFFFF;
+  background: #15803D !important;
+  color: #FFFFFF !important;
 }
 
 .pricing-radio input[type="radio"] {
