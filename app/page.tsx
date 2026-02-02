@@ -209,13 +209,13 @@ export default function Home() {
               <a href="https://instagram.com/parcefx" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
                 <FaInstagram /> <span>Instagram</span>
               </a>
-              <a href="https://tiktok.com/@parcefx" target="_blank" rel="noopener noreferrer" aria-label="TikTok">
+              <a href="https://www.tiktok.com/@fxparce" target="_blank" rel="noopener noreferrer" aria-label="TikTok">
                 <FaTiktok /> <span>TikTok</span>
               </a>
-              <a href="https://youtube.com/@parcefx" target="_blank" rel="noopener noreferrer" aria-label="YouTube">
+              <a href="https://www.youtube.com/@ParceTrades" target="_blank" rel="noopener noreferrer" aria-label="YouTube">
                 <FaYoutube /> <span>YouTube</span>
               </a>
-              <a href="https://discord.gg/parcefx" target="_blank" rel="noopener noreferrer" aria-label="Discord">
+              <a href="https://discord.gg/mPF5X3aY" target="_blank" rel="noopener noreferrer" aria-label="Discord">
                 <FaDiscord /> <span>Discord</span>
               </a>
             </div>
@@ -405,13 +405,13 @@ export default function Home() {
               <a href="https://instagram.com/parcefx" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
                 <FaInstagram /> <span>Instagram</span>
               </a>
-              <a href="https://tiktok.com/@parcefx" target="_blank" rel="noopener noreferrer" aria-label="TikTok">
+              <a href="https://www.tiktok.com/@fxparce" target="_blank" rel="noopener noreferrer" aria-label="TikTok">
                 <FaTiktok /> <span>TikTok</span>
               </a>
-              <a href="https://youtube.com/@parcefx" target="_blank" rel="noopener noreferrer" aria-label="YouTube">
+              <a href="https://www.youtube.com/@ParceTrades" target="_blank" rel="noopener noreferrer" aria-label="YouTube">
                 <FaYoutube /> <span>YouTube</span>
               </a>
-              <a href="https://discord.gg/parcefx" target="_blank" rel="noopener noreferrer" aria-label="Discord">
+              <a href="https://discord.gg/mPF5X3aY" target="_blank" rel="noopener noreferrer" aria-label="Discord">
                 <FaDiscord /> <span>Discord</span>
               </a>
             </div>

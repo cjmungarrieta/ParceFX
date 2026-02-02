@@ -10,7 +10,7 @@ const supabase = createClient(
 // Simple in-memory rate limiting (for production, use Vercel KV or Upstash)
 const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
 const RATE_LIMIT_WINDOW = 60 * 1000; // 1 minute
-const RATE_LIMIT_MAX = 3; // Max 3 requests per minute per IP
+const RATE_LIMIT_MAX = 5; // Max 5 requests per minute per IP
 
 // Helper function to normalize email
 function normalizeEmail(email: string): string {
@@ -88,8 +88,8 @@ export async function POST(request: Request) {
     const rateLimit = checkRateLimit(clientIP);
     if (!rateLimit.allowed) {
       return NextResponse.json(
-        { error: 'Demasiadas solicitudes. Por favor intenta en un minuto.' },
-        { status: 429 }
+        { error: 'Espera un minuto antes de enviar de nuevo. Límite de envíos por seguridad.' },
+        { status: 429, headers: { 'Retry-After': '60' } }
       );
     }
 
