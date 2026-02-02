@@ -19,7 +19,7 @@ const NOTIFY_EMAIL = process.env.NOTIFY_EMAIL || null;
 // Simple in-memory rate limiting (for production, use Vercel KV or Upstash)
 const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
 const RATE_LIMIT_WINDOW = 60 * 1000; // 1 minute
-const RATE_LIMIT_MAX = 5; // Max 5 requests per minute per IP
+const RATE_LIMIT_MAX = 10; // Max 10 requests per minute per IP
 
 // Helper function to normalize email
 function normalizeEmail(email: string): string {
@@ -149,27 +149,18 @@ export async function POST(request: Request) {
       );
     }
 
-    // Check for duplicate email
+    // Check for duplicate email - one signup per email
     const { data: existingLead } = await supabase
       .from('leads')
-      .select('id, email, created_at')
+      .select('id, email')
       .eq('email', normalizedEmail)
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .single();
+      .maybeSingle();
 
     if (existingLead) {
-      // Check if it was recent (within last hour)
-      const lastSubmission = new Date(existingLead.created_at).getTime();
-      const oneHourAgo = Date.now() - (60 * 60 * 1000);
-      
-      if (lastSubmission > oneHourAgo) {
-        return NextResponse.json(
-          { error: 'Ya te has registrado recientemente. Revisa tu email.' },
-          { status: 409 }
-        );
-      }
-      // If older than an hour, allow but don't send duplicate welcome email
+      return NextResponse.json(
+        { error: 'Este email ya está registrado. Revisa tu bandeja de entrada y carpeta de spam.' },
+        { status: 409 }
+      );
     }
 
     // Save to Supabase with UTM parameters
@@ -209,38 +200,37 @@ export async function POST(request: Request) {
       );
     }
 
-    // Send welcome email directly from Vercel (works even if Supabase Edge Function is not set up)
-    const isNewLead = !existingLead;
-    if (isNewLead && resend) {
-      try {
-        const hasPdf = !!STRATEGY_PDF_URL;
-        const attachments: { filename: string; path: string }[] = [];
-        if (STRATEGY_PDF_URL) {
-          attachments.push({ filename: 'Estrategia-ParceFX.pdf', path: STRATEGY_PDF_URL });
-        }
+    // Send welcome email in background (don't block the response)
+    if (resend) {
+      const hasPdf = !!STRATEGY_PDF_URL;
+      const attachments: { filename: string; path: string }[] = [];
+      if (STRATEGY_PDF_URL) {
+        attachments.push({ filename: 'Estrategia-ParceFX.pdf', path: STRATEGY_PDF_URL });
+      }
 
-        await resend.emails.send({
-          from: FROM_EMAIL,
-          to: normalizedEmail,
-          subject: '🎯 Tu Estrategia de Trading Está Lista',
-          html: getWelcomeHtml(nombre.trim(), hasPdf),
-          ...(attachments.length > 0 && { attachments }),
-        });
-
+      // Fire and forget - don't await, so response is instant
+      resend.emails.send({
+        from: FROM_EMAIL,
+        to: normalizedEmail,
+        subject: '🎯 Tu Estrategia de Trading Está Lista',
+        html: getWelcomeHtml(nombre.trim(), hasPdf),
+        ...(attachments.length > 0 && { attachments }),
+      }).then(() => {
         console.log(`Welcome email sent to ${normalizedEmail}`);
+      }).catch((err) => {
+        console.error('Error sending welcome email:', err);
+      });
 
-        // Optional: send notification to admin
-        if (NOTIFY_EMAIL) {
-          await resend.emails.send({
-            from: FROM_EMAIL,
-            to: NOTIFY_EMAIL,
-            subject: `🔔 Nuevo Lead: ${nombre.trim()}`,
-            html: `<p><strong>Nombre:</strong> ${nombre.trim()}<br/><strong>Email:</strong> ${normalizedEmail}<br/><strong>Fecha:</strong> ${new Date().toISOString()}</p>`,
-          });
-        }
-      } catch (emailError) {
-        // Log error but don't fail the request - lead was saved successfully
-        console.error('Error sending welcome email:', emailError);
+      // Optional: send notification to admin (also fire and forget)
+      if (NOTIFY_EMAIL) {
+        resend.emails.send({
+          from: FROM_EMAIL,
+          to: NOTIFY_EMAIL,
+          subject: `🔔 Nuevo Lead: ${nombre.trim()}`,
+          html: `<p><strong>Nombre:</strong> ${nombre.trim()}<br/><strong>Email:</strong> ${normalizedEmail}<br/><strong>Fecha:</strong> ${new Date().toISOString()}</p>`,
+        }).catch((err) => {
+          console.error('Error sending admin notification:', err);
+        });
       }
     }
 
