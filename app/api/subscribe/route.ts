@@ -19,7 +19,7 @@ const NOTIFY_EMAIL = process.env.NOTIFY_EMAIL || null;
 // Simple in-memory rate limiting (for production, use Vercel KV or Upstash)
 const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
 const RATE_LIMIT_WINDOW = 60 * 1000; // 1 minute
-const RATE_LIMIT_MAX = 5; // Max 5 requests per minute per IP
+const RATE_LIMIT_MAX = 10; // Max 10 requests per minute per IP
 
 // Helper function to normalize email
 function normalizeEmail(email: string): string {
@@ -149,27 +149,18 @@ export async function POST(request: Request) {
       );
     }
 
-    // Check for duplicate email
+    // Check for duplicate email - one signup per email
     const { data: existingLead } = await supabase
       .from('leads')
-      .select('id, email, created_at')
+      .select('id, email')
       .eq('email', normalizedEmail)
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .single();
+      .maybeSingle();
 
     if (existingLead) {
-      // Check if it was recent (within last hour)
-      const lastSubmission = new Date(existingLead.created_at).getTime();
-      const oneHourAgo = Date.now() - (60 * 60 * 1000);
-      
-      if (lastSubmission > oneHourAgo) {
-        return NextResponse.json(
-          { error: 'Ya te has registrado recientemente. Revisa tu email.' },
-          { status: 409 }
-        );
-      }
-      // If older than an hour, allow but don't send duplicate welcome email
+      return NextResponse.json(
+        { error: 'Este email ya está registrado. Revisa tu bandeja de entrada y carpeta de spam.' },
+        { status: 409 }
+      );
     }
 
     // Save to Supabase with UTM parameters
@@ -210,8 +201,7 @@ export async function POST(request: Request) {
     }
 
     // Send welcome email directly from Vercel (works even if Supabase Edge Function is not set up)
-    const isNewLead = !existingLead;
-    if (isNewLead && resend) {
+    if (resend) {
       try {
         const hasPdf = !!STRATEGY_PDF_URL;
         const attachments: { filename: string; path: string }[] = [];

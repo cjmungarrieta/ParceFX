@@ -353,20 +353,21 @@ export default function Home() {
           )}
 
           {submitMessage === 'error' && (
-            <div 
+            <div
               role="alert"
               aria-live="assertive"
-              style={{ 
-                background: 'rgba(239, 68, 68, 0.1)', 
-                border: '2px solid #EF4444', 
-                borderRadius: '12px', 
-                padding: '20px', 
+              style={{
+                background: 'rgba(239, 68, 68, 0.1)',
+                border: '2px solid #EF4444',
+                borderRadius: '12px',
+                padding: '20px',
                 marginTop: '20px',
                 textAlign: 'center',
                 color: '#EF4444'
               }}
             >
-              <strong>❌ Error</strong> {errorMessage || 'Por favor intenta nuevamente.'}
+              <strong>❌</strong> {errorMessage || 'No se pudo enviar. Por favor intenta de nuevo.'}
+              <p style={{ fontSize: '0.85rem', marginTop: '10px', opacity: 0.9 }}>Si sigue fallando, espera 1 minuto o escríbenos por Instagram.</p>
             </div>
           )}
 
@@ -684,7 +685,8 @@ function ExitIntentPopup({
                   color: '#EF4444',
                   fontSize: '0.95rem'
                 }}>
-                  ❌ {errorMessage || 'Error. Por favor intenta nuevamente.'}
+                  ❌ {errorMessage || 'No se pudo enviar. Por favor intenta de nuevo.'}
+                  <p style={{ fontSize: '0.8rem', marginTop: '8px', opacity: 0.9 }}>Si sigue fallando, espera 1 minuto.</p>
                 </div>
               )}
 
