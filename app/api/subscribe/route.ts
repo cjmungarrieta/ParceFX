@@ -71,10 +71,10 @@ export async function POST(request: Request) {
       );
     }
 
-    // Timestamp check - prevent too-fast submissions (likely bots)
-    if (submitTimestamp) {
+    // Timestamp check - reject only suspiciously fast submissions (e.g. bots, < 500ms)
+    if (submitTimestamp && typeof submitTimestamp === 'number') {
       const timeDiff = Date.now() - submitTimestamp;
-      if (timeDiff < 2000) { // Less than 2 seconds = likely bot
+      if (timeDiff < 0 || timeDiff < 500) {
         console.warn('Submission too fast, likely bot');
         return NextResponse.json(
           { error: 'Por favor espera un momento antes de enviar nuevamente' },
