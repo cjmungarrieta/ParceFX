@@ -2,9 +2,24 @@
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
+import { motion, useReducedMotion } from 'framer-motion';
 import { FaInstagram, FaTiktok, FaYoutube, FaDiscord } from 'react-icons/fa';
 
+const staggerContainer = {
+  visible: {
+    transition: { staggerChildren: 0.08, delayChildren: 0.1 },
+  },
+};
+
+const staggerItem = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0 },
+};
+
 export default function Home() {
+  const reducedMotion = useReducedMotion();
+  const motionTransition = reducedMotion ? { duration: 0 } : { duration: 0.5, ease: 'easeOut' as const };
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isExitIntentOpen, setIsExitIntentOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -72,8 +87,6 @@ export default function Home() {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log('Form submitted!'); // Debug log
-    
     setIsSubmitting(true);
     setSubmitMessage('');
     setFieldErrors({});
@@ -89,12 +102,9 @@ export default function Home() {
 
     const formData = new FormData(e.currentTarget);
     const honeypot = formData.get('website') as string; // Honeypot field
-    
-    console.log('Honeypot value:', honeypot); // Debug log
-    
+
     // Check honeypot
     if (honeypot && honeypot.trim() !== '') {
-      console.log('Honeypot triggered!'); // Debug log
       setErrorMessage('Spam detected');
       setIsSubmitting(false);
       return;
@@ -122,9 +132,6 @@ export default function Home() {
       errors.email = 'Por favor ingresa un email válido';
     }
     
-    console.log('Validation errors:', errors); // Debug log
-    console.log('Form data:', data); // Debug log
-    
     if (Object.keys(errors).length > 0) {
       setFieldErrors(errors);
       setIsSubmitting(false);
@@ -132,8 +139,6 @@ export default function Home() {
     }
 
     try {
-      console.log('Sending request to /api/subscribe...'); // Debug log
-      
       const response = await fetch('/api/subscribe', {
         method: 'POST',
         headers: {
@@ -142,10 +147,7 @@ export default function Home() {
         body: JSON.stringify(data),
       });
 
-      console.log('Response status:', response.status); // Debug log
-
       const result = await response.json();
-      console.log('Response result:', result); // Debug log
 
       if (response.ok) {
         setSubmitMessage('success');
@@ -188,14 +190,18 @@ export default function Home() {
       {/* Scrolling Banner */}
       <ScrollingBanner />
 
-      <header>
+      <motion.header
+        initial={{ opacity: 0, y: -12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={motionTransition}
+      >
         <div className="container">
           <div className="header-content">
-            <div>
+            <div className="brand">
               <div className="logo">
                 PARCE<span style={{ color: 'var(--accent-white)' }}>FX</span>
               </div>
-              <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginTop: '5px', fontWeight: '500' }}>
+              <p className="header-tagline">
                 Trader Independiente | Miami, FL
               </p>
             </div>
@@ -215,11 +221,17 @@ export default function Home() {
             </div>
           </div>
         </div>
-      </header>
+      </motion.header>
 
-      <section className="hero">
+      <motion.section
+        className="hero"
+        initial="hidden"
+        animate="visible"
+        variants={staggerContainer}
+        transition={motionTransition}
+      >
         <div className="container">
-          <div className="hero-content">
+          <motion.div className="hero-content" variants={staggerItem}>
             <h1>
               El Trading No Es Magia.<br />
               Es <span className="highlight">Disciplina</span>.
@@ -230,8 +242,8 @@ export default function Home() {
             <p style={{ fontSize: '1.1rem', color: 'var(--text-secondary)', marginTop: '20px' }}>
               Soy un trader independiente operando desde Miami. Aquí comparto exactamente lo que hago—sin exagerar ganancias, sin prometer millones, sin venderte cursos de $2,000.
             </p>
-          </div>
-          <div className="hero-image-wrapper">
+          </motion.div>
+          <motion.div className="hero-image-wrapper" variants={staggerItem}>
             <Image 
               src="/hero-image.jpg" 
               alt="ParceFX Trader Success" 
@@ -240,11 +252,17 @@ export default function Home() {
               height={500}
               priority
             />
-          </div>
+          </motion.div>
         </div>
-      </section>
+      </motion.section>
 
-      <section className="lead-section container">
+      <motion.section
+        className="lead-section container"
+        initial={{ opacity: 0, y: 32 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: '-50px' }}
+        transition={motionTransition}
+      >
         <div className="lead-content">
           <h2>📥 Recibe Mi Estrategia de Entrada Gratis</h2>
           <p className="subtitle">
@@ -310,14 +328,7 @@ export default function Home() {
                 inputMode="tel"
               />
             </div>
-            <button 
-              type="submit" 
-              disabled={isSubmitting}
-              onClick={(e) => {
-                console.log('Button clicked!', e);
-                // Don't prevent default here - let form handle it
-              }}
-            >
+            <button type="submit" disabled={isSubmitting}>
               {isSubmitting ? '⏳ ENVIANDO...' : '📥 DESCARGAR ESTRATEGIA GRATIS'}
             </button>
           </form>
@@ -373,7 +384,7 @@ export default function Home() {
             <strong>Disclaimer:</strong> Trading implica riesgo de pérdida. Resultados pasados no garantizan resultados futuros.
           </p>
         </div>
-      </section>
+      </motion.section>
 
       {/* Rest of sections... */}
       <WhyDifferentSection />
@@ -382,7 +393,12 @@ export default function Home() {
       <FAQSection />
       <FinalCTASection onSubmit={handleSubmit} isSubmitting={isSubmitting} />
       
-      <footer>
+      <motion.footer
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 1 }}
+        viewport={{ once: true, margin: '-50px' }}
+        transition={motionTransition}
+      >
         <div className="container">
           <div className="footer-content">
             <div className="footer-social">
@@ -415,7 +431,7 @@ export default function Home() {
             </p>
           </div>
         </div>
-      </footer>
+      </motion.footer>
 
       {/* Modal */}
       {isModalOpen && <Modal closeModal={closeModal} />}
@@ -459,8 +475,6 @@ function ExitIntentPopup({
     }
 
     try {
-      console.log('Exit intent: Submitting email:', email);
-      
       const response = await fetch('/api/subscribe', {
         method: 'POST',
         headers: {
@@ -481,7 +495,6 @@ function ExitIntentPopup({
       });
 
       const result = await response.json();
-      console.log('Exit intent: Response:', result);
 
       if (response.ok) {
         setSubmitStatus('success');
@@ -899,31 +912,46 @@ function PricingOptions() {
 
 // Why Different Section
 function WhyDifferentSection() {
+  const reducedMotion = useReducedMotion();
+  const t = reducedMotion ? { duration: 0 } : { duration: 0.5, ease: 'easeOut' as const };
   return (
-    <section className="features container" style={{ padding: '80px 0' }}>
+    <motion.section
+      className="features container"
+      style={{ padding: '80px 0' }}
+      initial={{ opacity: 0, y: 32 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: '-50px' }}
+      transition={t}
+    >
       <h2>¿Por Qué Esto Es Diferente?</h2>
       <p style={{ fontSize: '1.2rem', color: 'var(--text-secondary)', textAlign: 'center', maxWidth: '800px', margin: '0 auto 50px' }}>
         La mayoría de "mentores" te muestran sus mejores trades en Lamborghinis.<br />
         Yo te muestro:
       </p>
-      <div className="features-grid">
-        <div className="feature">
+      <motion.div
+        className="features-grid"
+        variants={staggerContainer}
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, margin: '-30px' }}
+      >
+        <motion.div className="feature" variants={staggerItem}>
           <div className="feature-icon">✅</div>
           <h3>Mis Pérdidas</h3>
           <p>Porque todos las tenemos. Te muestro los errores que cometí perdiendo $3,200 en mi primer mes.</p>
-        </div>
-        <div className="feature">
+        </motion.div>
+        <motion.div className="feature" variants={staggerItem}>
           <div className="feature-icon">📊</div>
           <h3>Mi Ratio Real</h3>
           <p>Mi ratio de riesgo/beneficio real. Sin exagerar. Sin ocultar las pérdidas.</p>
-        </div>
-        <div className="feature">
+        </motion.div>
+        <motion.div className="feature" variants={staggerItem}>
           <div className="feature-icon">🎯</div>
           <h3>Proceso, No Resultados</h3>
           <p>No vendo resultados. Enseño proceso. Esto es lo que separa a los que sobreviven de los que explotan su cuenta.</p>
-        </div>
-      </div>
-    </section>
+        </motion.div>
+      </motion.div>
+    </motion.section>
   );
 }
 
@@ -947,19 +975,33 @@ function TestimonialsSection() {
     }
   ];
 
+  const reducedMotion = useReducedMotion();
+  const t = reducedMotion ? { duration: 0 } : { duration: 0.5, ease: 'easeOut' as const };
   return (
-    <section className="proof-section container">
+    <motion.section
+      className="proof-section container"
+      initial={{ opacity: 0, y: 32 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: '-50px' }}
+      transition={t}
+    >
       <h2>Qué Dicen Otros Traders</h2>
-      <div className="testimonials">
+      <motion.div
+        className="testimonials"
+        variants={staggerContainer}
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, margin: '-30px' }}
+      >
         {testimonials.map((t, i) => (
-          <div key={i} className="testimonial">
+          <motion.div key={i} className="testimonial" variants={staggerItem}>
             <p className="testimonial-text">{t.text}</p>
             <p className="testimonial-author">— {t.author}</p>
             <p className="testimonial-location">{t.location}</p>
-          </div>
+          </motion.div>
         ))}
-      </div>
-    </section>
+      </motion.div>
+    </motion.section>
   );
 }
 
@@ -971,19 +1013,33 @@ function FeaturesSection() {
     { icon: '🎯', title: 'Checklist Pre-Trade', text: 'Las 7 preguntas que me hago antes de presionar "buy" o "sell". Esto me salvó de pérdidas impulsivas.' }
   ];
 
+  const reducedMotion = useReducedMotion();
+  const t = reducedMotion ? { duration: 0 } : { duration: 0.5, ease: 'easeOut' as const };
   return (
-    <section className="features container">
+    <motion.section
+      className="features container"
+      initial={{ opacity: 0, y: 32 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: '-50px' }}
+      transition={t}
+    >
       <h2>Lo Que Aprenderás (Gratis)</h2>
-      <div className="features-grid">
+      <motion.div
+        className="features-grid"
+        variants={staggerContainer}
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, margin: '-30px' }}
+      >
         {features.map((f, i) => (
-          <div key={i} className="feature">
+          <motion.div key={i} className="feature" variants={staggerItem}>
             <div className="feature-icon">{f.icon}</div>
             <h3>{f.title}</h3>
             <p>{f.text}</p>
-          </div>
+          </motion.div>
         ))}
-      </div>
-    </section>
+      </motion.div>
+    </motion.section>
   );
 }
 
@@ -995,13 +1051,30 @@ function FAQSection() {
     { q: '¿Me vas a bombardear con emails?', a: 'No. Recibirás la estrategia inmediatamente, luego 1 email semanal con análisis de mercado. Cancela cuando quieras.' }
   ];
 
+  const reducedMotion = useReducedMotion();
+  const t = reducedMotion ? { duration: 0 } : { duration: 0.5, ease: 'easeOut' as const };
   return (
-    <section className="faq-section">
+    <motion.section
+      className="faq-section"
+      initial={{ opacity: 0, y: 32 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: '-50px' }}
+      transition={t}
+    >
       <h2>Preguntas Frecuentes</h2>
-      {faqs.map((faq, i) => (
-        <FAQItem key={i} question={faq.q} answer={faq.a} />
-      ))}
-    </section>
+      <motion.div
+        variants={staggerContainer}
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, margin: '-30px' }}
+      >
+        {faqs.map((faq, i) => (
+          <motion.div key={i} variants={staggerItem}>
+            <FAQItem question={faq.q} answer={faq.a} />
+          </motion.div>
+        ))}
+      </motion.div>
+    </motion.section>
   );
 }
 
@@ -1020,8 +1093,17 @@ function FAQItem({ question, answer }: { question: string; answer: string }) {
 }
 
 function FinalCTASection({ onSubmit, isSubmitting }: any) {
+  const reducedMotion = useReducedMotion();
+  const t = reducedMotion ? { duration: 0 } : { duration: 0.5, ease: 'easeOut' as const };
   return (
-    <section className="lead-section container" style={{ marginBottom: 0 }}>
+    <motion.section
+      className="lead-section container"
+      style={{ marginBottom: 0 }}
+      initial={{ opacity: 0, y: 32 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: '-50px' }}
+      transition={t}
+    >
       <div className="lead-content">
         <h2>🎯 Descarga Tu Estrategia Ahora</h2>
         <p className="subtitle">
@@ -1042,7 +1124,7 @@ function FinalCTASection({ onSubmit, isSubmitting }: any) {
           </button>
         </form>
       </div>
-    </section>
+    </motion.section>
   );
 }
 

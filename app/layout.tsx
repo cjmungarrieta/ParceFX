@@ -18,40 +18,43 @@ const manrope = Manrope({
 
 const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://parcefx.vercel.app'
 
+const siteTitle = 'ParceFX - Trader Independiente | Miami, FL'
+const siteDescription = 'El trading no es magia, es disciplina. Recibe mi estrategia de entrada gratis: PDF, video y plantilla. Trader independiente desde Miami, sin promesas falsas.'
+
 export const metadata: Metadata = {
   metadataBase: new URL(appUrl),
-  title: 'ParceFX - El Trader de Miami | Estrategias de Trading Reales',
-  description: 'Aprende las estrategias exactas de trading que uso para generar resultados consistentes. Opera en vivo con un trader profesional desde Miami, Florida.',
-  keywords: ['trading', 'forex', 'estrategias trading', 'trader miami', 'parcefx', 'trading en vivo'],
-  authors: [{ name: 'ParceFX' }],
+  title: {
+    default: siteTitle,
+    template: '%s | ParceFX',
+  },
+  description: siteDescription,
+  keywords: ['trading', 'forex', 'estrategia trading gratis', 'trader miami', 'parcefx', 'trading real', 'gestión de riesgo', 'disciplina trading'],
+  authors: [{ name: 'ParceFX', url: appUrl }],
+  creator: 'ParceFX',
   openGraph: {
-    title: 'ParceFX - El Trader de Miami',
-    description: 'Aprende las estrategias exactas de trading que uso para generar resultados consistentes. Opera en vivo con un trader profesional.',
+    title: siteTitle,
+    description: siteDescription,
     url: appUrl,
     siteName: 'ParceFX',
     locale: 'es_ES',
     type: 'website',
-    images: [
-      {
-        url: '/og-image.jpg',
-        width: 1200,
-        height: 630,
-        alt: 'ParceFX - Trading Strategies',
-      },
-    ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'ParceFX - El Trader de Miami',
-    description: 'Aprende las estrategias exactas de trading que uso para generar resultados consistentes.',
-    images: ['/og-image.jpg'],
+    title: siteTitle,
+    description: siteDescription,
   },
   robots: {
     index: true,
     follow: true,
+    googleBot: { index: true, follow: true },
   },
   alternates: {
     canonical: appUrl,
+  },
+  icons: {
+    icon: '/icon',
+    apple: '/apple-icon',
   },
 }
 
@@ -60,13 +63,37 @@ export default function RootLayout({
 }: {
   children: React.ReactNode
 }) {
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    name: 'ParceFX',
+    description: siteDescription,
+    url: appUrl,
+    inLanguage: 'es',
+    publisher: {
+      '@type': 'Organization',
+      name: 'ParceFX',
+      url: appUrl,
+      logo: {
+        '@type': 'ImageObject',
+        url: `${appUrl}/apple-icon`,
+      },
+    },
+    potentialAction: {
+      '@type': 'SubscribeAction',
+      target: { '@type': 'EntryPoint', url: appUrl },
+    },
+  }
+
   return (
     <html lang="es" className={`${oswald.variable} ${manrope.variable}`}>
-      <head>
-        <link rel="icon" href="/favicon.ico" />
-        <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-      </head>
-      <body>{children}</body>
+      <body>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+        {children}
+      </body>
     </html>
   )
 }
