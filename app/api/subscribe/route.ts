@@ -200,56 +200,44 @@ export async function POST(request: Request) {
       );
     }
 
-    // Send welcome email directly from Vercel (works even if Supabase Edge Function is not set up)
-    let emailSent = false;
-    let emailError: string | null = null;
-
+    // Send welcome email in background (don't block the response)
     if (resend) {
-      try {
-        const hasPdf = !!STRATEGY_PDF_URL;
-        const attachments: { filename: string; path: string }[] = [];
-        if (STRATEGY_PDF_URL) {
-          attachments.push({ filename: 'Estrategia-ParceFX.pdf', path: STRATEGY_PDF_URL });
-        }
-
-        console.log(`Attempting to send email to ${normalizedEmail} from ${FROM_EMAIL}`);
-
-        const emailResult = await resend.emails.send({
-          from: FROM_EMAIL,
-          to: normalizedEmail,
-          subject: '🎯 Tu Estrategia de Trading Está Lista',
-          html: getWelcomeHtml(nombre.trim(), hasPdf),
-          ...(attachments.length > 0 && { attachments }),
-        });
-
-        console.log(`Welcome email sent to ${normalizedEmail}`, emailResult);
-        emailSent = true;
-
-        // Optional: send notification to admin
-        if (NOTIFY_EMAIL) {
-          await resend.emails.send({
-            from: FROM_EMAIL,
-            to: NOTIFY_EMAIL,
-            subject: `🔔 Nuevo Lead: ${nombre.trim()}`,
-            html: `<p><strong>Nombre:</strong> ${nombre.trim()}<br/><strong>Email:</strong> ${normalizedEmail}<br/><strong>Fecha:</strong> ${new Date().toISOString()}</p>`,
-          });
-        }
-      } catch (err: any) {
-        // Log error but don't fail the request - lead was saved successfully
-        console.error('Error sending welcome email:', err);
-        emailError = err?.message || 'Unknown email error';
+      const hasPdf = !!STRATEGY_PDF_URL;
+      const attachments: { filename: string; path: string }[] = [];
+      if (STRATEGY_PDF_URL) {
+        attachments.push({ filename: 'Estrategia-ParceFX.pdf', path: STRATEGY_PDF_URL });
       }
-    } else {
-      console.warn('Resend not configured - RESEND_API_KEY missing');
-      emailError = 'Email service not configured';
+
+      // Fire and forget - don't await, so response is instant
+      resend.emails.send({
+        from: FROM_EMAIL,
+        to: normalizedEmail,
+        subject: '🎯 Tu Estrategia de Trading Está Lista',
+        html: getWelcomeHtml(nombre.trim(), hasPdf),
+        ...(attachments.length > 0 && { attachments }),
+      }).then(() => {
+        console.log(`Welcome email sent to ${normalizedEmail}`);
+      }).catch((err) => {
+        console.error('Error sending welcome email:', err);
+      });
+
+      // Optional: send notification to admin (also fire and forget)
+      if (NOTIFY_EMAIL) {
+        resend.emails.send({
+          from: FROM_EMAIL,
+          to: NOTIFY_EMAIL,
+          subject: `🔔 Nuevo Lead: ${nombre.trim()}`,
+          html: `<p><strong>Nombre:</strong> ${nombre.trim()}<br/><strong>Email:</strong> ${normalizedEmail}<br/><strong>Fecha:</strong> ${new Date().toISOString()}</p>`,
+        }).catch((err) => {
+          console.error('Error sending admin notification:', err);
+        });
+      }
     }
 
     return NextResponse.json({
       success: true,
       message: 'Lead guardado exitosamente',
-      lead,
-      emailSent,
-      emailError
+      lead
     });
 
   } catch (error) {
