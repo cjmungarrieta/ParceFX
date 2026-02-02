@@ -1115,11 +1115,29 @@ function FinalCTASection({ onSubmit, isSubmitting }: any) {
           Acceso inmediato. Sin tarjeta. Sin trampas.
         </p>
         <form onSubmit={onSubmit}>
-          <input 
-            type="email" 
-            name="email" 
-            placeholder="Tu Email" 
-            required 
+          {/* Honeypot field - hidden from users */}
+          <input
+            type="text"
+            name="website"
+            tabIndex={-1}
+            autoComplete="off"
+            style={{ position: 'absolute', left: '-9999px' }}
+            aria-hidden="true"
+          />
+          <input
+            type="text"
+            name="nombre"
+            placeholder="Tu Nombre"
+            required
+            disabled={isSubmitting}
+            autoComplete="name"
+            inputMode="text"
+          />
+          <input
+            type="email"
+            name="email"
+            placeholder="Tu Email"
+            required
             disabled={isSubmitting}
             autoComplete="email"
             inputMode="email"
