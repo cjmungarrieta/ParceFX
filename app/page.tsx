@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { motion, useReducedMotion } from 'framer-motion';
-import { FaInstagram, FaTiktok, FaYoutube, FaDiscord } from 'react-icons/fa';
+import { FaInstagram, FaTelegram, FaYoutube, FaDiscord } from 'react-icons/fa';
 
 const staggerContainer = {
   visible: {
@@ -210,8 +210,8 @@ export default function Home() {
               <a href="https://instagram.com/parcefx" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
                 <FaInstagram /> <span>Instagram</span>
               </a>
-              <a href="https://www.tiktok.com/@fxparce" target="_blank" rel="noopener noreferrer" aria-label="TikTok">
-                <FaTiktok /> <span>TikTok</span>
+              <a href="https://t.me/+qs8TLnt4TyhjMDFh" target="_blank" rel="noopener noreferrer" aria-label="Telegram">
+                <FaTelegram /> <span>Telegram</span>
               </a>
               <a href="https://www.youtube.com/@ParceTrades" target="_blank" rel="noopener noreferrer" aria-label="YouTube">
                 <FaYoutube /> <span>YouTube</span>
@@ -407,8 +407,8 @@ export default function Home() {
               <a href="https://instagram.com/parcefx" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
                 <FaInstagram /> <span>Instagram</span>
               </a>
-              <a href="https://www.tiktok.com/@fxparce" target="_blank" rel="noopener noreferrer" aria-label="TikTok">
-                <FaTiktok /> <span>TikTok</span>
+              <a href="https://t.me/+qs8TLnt4TyhjMDFh" target="_blank" rel="noopener noreferrer" aria-label="Telegram">
+                <FaTelegram /> <span>Telegram</span>
               </a>
               <a href="https://www.youtube.com/@ParceTrades" target="_blank" rel="noopener noreferrer" aria-label="YouTube">
                 <FaYoutube /> <span>YouTube</span>
