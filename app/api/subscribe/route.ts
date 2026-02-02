@@ -1,11 +1,20 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { Resend } from 'resend';
 
-// Initialize Supabase client (welcome email is sent by Supabase Edge Function on insert)
+// Initialize Supabase client
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
+
+// Initialize Resend for email sending (optional - only if RESEND_API_KEY is set)
+const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
+
+// Email configuration
+const FROM_EMAIL = process.env.FROM_EMAIL || 'ParceFX <onboarding@resend.dev>';
+const STRATEGY_PDF_URL = process.env.STRATEGY_PDF_URL || null;
+const NOTIFY_EMAIL = process.env.NOTIFY_EMAIL || null;
 
 // Simple in-memory rate limiting (for production, use Vercel KV or Upstash)
 const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
@@ -44,6 +53,36 @@ function checkRateLimit(ip: string): { allowed: boolean; remaining: number } {
 
   record.count++;
   return { allowed: true, remaining: RATE_LIMIT_MAX - record.count };
+}
+
+// Welcome email HTML template
+function getWelcomeHtml(nombre: string, hasPdf: boolean): string {
+  return `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; }
+    .header { background: linear-gradient(135deg, #FFD700, #FFED4E); color: #0D0D0D; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+    .header h1 { margin: 0; font-size: 28px; text-transform: uppercase; letter-spacing: 2px; }
+    .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }
+    .content h2 { color: #FFD700; margin-top: 0; }
+    .cta-button { display: inline-block; background: linear-gradient(135deg, #FFD700, #FFED4E); color: #0D0D0D; padding: 15px 40px; text-decoration: none; border-radius: 8px; font-weight: bold; text-transform: uppercase; margin: 20px 0; letter-spacing: 1px; }
+    .footer { text-align: center; padding: 20px; color: #666; font-size: 12px; }
+  </style>
+</head>
+<body>
+  <div class="header"><h1>PARCEFX</h1></div>
+  <div class="content">
+    <h2>¡Bienvenido, ${nombre}! 🚀</h2>
+    <p>Gracias por unirte a la comunidad de ParceFX.</p>
+    ${hasPdf ? '<p><strong>📎 Tu estrategia en PDF está adjunta a este email.</strong> Descárgala y guárdala.</p>' : ''}
+    <p>¿Listo para el siguiente nivel? Únete al Parce VIP y opera en vivo conmigo.</p>
+    <p style="text-align:center;"><a href="https://whop.com/parce4x-s-whop/parce-vip-senales-mentoria" class="cta-button">🎯 ÚNETE AL PARCE VIP</a></p>
+  </div>
+  <div class="footer"><p>ParceFX - Miami, Florida</p><p>Trading implica riesgos. Los resultados pasados no garantizan resultados futuros.</p></div>
+</body>
+</html>`;
 }
 
 export async function POST(request: Request) {
@@ -170,12 +209,45 @@ export async function POST(request: Request) {
       );
     }
 
-    // Welcome email + PDF are sent by Supabase Edge Function (Database Webhook on leads INSERT)
+    // Send welcome email directly from Vercel (works even if Supabase Edge Function is not set up)
+    const isNewLead = !existingLead;
+    if (isNewLead && resend) {
+      try {
+        const hasPdf = !!STRATEGY_PDF_URL;
+        const attachments: { filename: string; path: string }[] = [];
+        if (STRATEGY_PDF_URL) {
+          attachments.push({ filename: 'Estrategia-ParceFX.pdf', path: STRATEGY_PDF_URL });
+        }
 
-    return NextResponse.json({ 
-      success: true, 
+        await resend.emails.send({
+          from: FROM_EMAIL,
+          to: normalizedEmail,
+          subject: '🎯 Tu Estrategia de Trading Está Lista',
+          html: getWelcomeHtml(nombre.trim(), hasPdf),
+          ...(attachments.length > 0 && { attachments }),
+        });
+
+        console.log(`Welcome email sent to ${normalizedEmail}`);
+
+        // Optional: send notification to admin
+        if (NOTIFY_EMAIL) {
+          await resend.emails.send({
+            from: FROM_EMAIL,
+            to: NOTIFY_EMAIL,
+            subject: `🔔 Nuevo Lead: ${nombre.trim()}`,
+            html: `<p><strong>Nombre:</strong> ${nombre.trim()}<br/><strong>Email:</strong> ${normalizedEmail}<br/><strong>Fecha:</strong> ${new Date().toISOString()}</p>`,
+          });
+        }
+      } catch (emailError) {
+        // Log error but don't fail the request - lead was saved successfully
+        console.error('Error sending welcome email:', emailError);
+      }
+    }
+
+    return NextResponse.json({
+      success: true,
       message: 'Lead guardado exitosamente',
-      lead 
+      lead
     });
 
   } catch (error) {
