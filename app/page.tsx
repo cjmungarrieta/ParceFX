@@ -88,6 +88,7 @@ export default function Home() {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    const form = e.currentTarget; // Save form reference before async operations
     setIsSubmitting(true);
     setSubmitMessage('');
     setFieldErrors({});
@@ -101,7 +102,7 @@ export default function Home() {
       });
     }
 
-    const formData = new FormData(e.currentTarget);
+    const formData = new FormData(form);
     const honeypot = formData.get('website') as string; // Honeypot field
 
     // Check honeypot
@@ -152,7 +153,7 @@ export default function Home() {
 
       if (response.ok) {
         setSubmitMessage('success');
-        e.currentTarget.reset();
+        form.reset();
         setFieldErrors({});
         
         // Track success
