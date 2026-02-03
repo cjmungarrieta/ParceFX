@@ -893,7 +893,18 @@ function PricingOptions() {
               <span className="price">{option.price}</span>
               <span className="period">{option.period}</span>
               {option.discount && (
-                <span className={`discount ${option.highlight ? 'highlight' : ''} ${option.best ? 'best' : ''}`}>
+                <span
+                  style={{
+                    fontSize: '0.75rem',
+                    fontWeight: 700,
+                    padding: '4px 8px',
+                    borderRadius: '4px',
+                    background: option.best ? '#15803D' : option.highlight ? '#16A34A' : '#22C55E',
+                    color: option.best || option.highlight ? '#FFFFFF' : '#000000',
+                    whiteSpace: 'nowrap',
+                    display: 'inline-block'
+                  }}
+                >
                   {option.discount}
                 </span>
               )}
