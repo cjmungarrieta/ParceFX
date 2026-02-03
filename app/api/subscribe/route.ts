@@ -66,8 +66,9 @@ function getWelcomeHtml(nombre: string, hasPdf: boolean): string {
     .header { background: linear-gradient(135deg, #FFD700, #FFED4E); color: #0D0D0D; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
     .header h1 { margin: 0; font-size: 28px; text-transform: uppercase; letter-spacing: 2px; }
     .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }
-    .content h2 { color: #FFD700; margin-top: 0; }
-    .cta-button { display: inline-block; background: linear-gradient(135deg, #FFD700, #FFED4E); color: #0D0D0D; padding: 15px 40px; text-decoration: none; border-radius: 8px; font-weight: bold; text-transform: uppercase; margin: 20px 0; letter-spacing: 1px; }
+    .content h2 { color: #B8860B; margin-top: 0; }
+    .cta-button { display: inline-block; background: linear-gradient(135deg, #FFD700, #FFED4E); color: #0D0D0D; padding: 15px 40px; text-decoration: none; border-radius: 8px; font-weight: bold; text-transform: uppercase; margin: 10px 0; letter-spacing: 1px; }
+    .telegram-button { display: inline-block; background: #0088cc; color: #FFFFFF; padding: 15px 40px; text-decoration: none; border-radius: 8px; font-weight: bold; text-transform: uppercase; margin: 10px 0; letter-spacing: 1px; }
     .footer { text-align: center; padding: 20px; color: #666; font-size: 12px; }
   </style>
 </head>
@@ -77,7 +78,10 @@ function getWelcomeHtml(nombre: string, hasPdf: boolean): string {
     <h2>¡Bienvenido, ${nombre}! 🚀</h2>
     <p>Gracias por unirte a la comunidad de ParceFX.</p>
     ${hasPdf ? '<p><strong>📎 Tu estrategia en PDF está adjunta a este email.</strong> Descárgala y guárdala.</p>' : ''}
-    <p>¿Listo para el siguiente nivel? Únete al Parce VIP y opera en vivo conmigo.</p>
+    <p><strong>Únete a nuestro grupo de Telegram</strong> para recibir análisis diarios, señales y conectar con otros traders:</p>
+    <p style="text-align:center;"><a href="https://t.me/+qs8TLnt4TyhjMDFh" class="telegram-button">📱 UNIRSE AL TELEGRAM</a></p>
+    <hr style="border: none; border-top: 1px solid #ddd; margin: 25px 0;">
+    <p>¿Listo para el siguiente nivel? Únete al <strong>Parce VIP</strong> y opera en vivo conmigo.</p>
     <p style="text-align:center;"><a href="https://whop.com/parce4x-s-whop/parce-vip-senales-mentoria" class="cta-button">🎯 ÚNETE AL PARCE VIP</a></p>
   </div>
   <div class="footer"><p>ParceFX - Miami, Florida</p><p>Trading implica riesgos. Los resultados pasados no garantizan resultados futuros.</p></div>
